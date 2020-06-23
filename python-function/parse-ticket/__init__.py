@@ -5,7 +5,7 @@ import azure.functions as func
 import requests
 
 translator_endpoint = os.environ["TRANSLATION_ENDPOINT"]
-logging.info(f"score_endpoint: {translator_endpoint}")
+logging.info(f"translator_endpoint: {translator_endpoint}")
 assert translator_endpoint is not None
 
 ocp_apim_key = os.environ["ENDPOINT_SECRET"]
@@ -57,11 +57,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"html: {message.get('html')}")
     logging.info(f"markdown: {message.get('markdown')}")
 
-    translations = translate(text)
-    logging.info(f"translation: {json.dumps(translations)}")
+    translations = json.dumps(translate(text))
+    logging.info(f"translation: {translations}")
 
     try:
-        return func.HttpResponse(json.dumps(translations))
+        return func.HttpResponse(translations)
     except Exception as e:
         return func.HttpResponse(
             f"Could not parse request. Error: '{e}'", status_code=400
