@@ -5,7 +5,6 @@ import azure.functions as func
 import requests
 
 translator_endpoint = os.environ["TRANSLATION_ENDPOINT"]
-logging.info(f"translator_endpoint: {translator_endpoint}")
 assert translator_endpoint is not None
 
 ocp_apim_key = os.environ["ENDPOINT_SECRET"]
@@ -51,13 +50,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Request: {req_body}")
 
     message = req_body.get("message")
-    text = message.get("text")
 
-    logging.info(f"text: {text}")
-    logging.info(f"html: {message.get('html')}")
-    logging.info(f"markdown: {message.get('markdown')}")
+    # text = message.get("text")
 
-    translations = json.dumps(translate(text))
+    # logging.info(f"text: {text}")
+    # logging.info(f"html: {message.get('html')}")
+    # logging.info(f"markdown: {message.get('markdown')}")
+
+    translations = json.dumps(translate(message.get("text")))
     logging.info(f"translation: {translations}")
 
     try:
