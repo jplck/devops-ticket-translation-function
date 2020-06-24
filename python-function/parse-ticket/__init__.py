@@ -32,14 +32,9 @@ def translate(text, source_language=None, target_language="de", api_version="3.0
 
     payload = json.dumps([{"text": text}])
 
-    response = requests.request("POST", endpoint, headers=headers, data=payload,)
+    response = requests.request("POST", endpoint, headers=headers, data=payload)
 
-    translation_response = json.loads(response.content)
-
-    logging.info(f"Response Code: {response.status_code}")
-    logging.info(f"Response: {translation_response}")
-
-    return translation_response
+    return response.content
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -51,14 +46,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     message = req_body.get("message")
 
-    # text = message.get("text")
-
-    # logging.info(f"text: {text}")
-    # logging.info(f"html: {message.get('html')}")
-    # logging.info(f"markdown: {message.get('markdown')}")
-
-    translations = json.dumps(translate(message.get("text")))
-    logging.info(f"translation: {translations}")
+    translations = translate(message.get("text"))
 
     try:
         return func.HttpResponse(translations)
