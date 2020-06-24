@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using System.Net.Http;
+using System.Net;
 
 namespace tickettranslator
 {
@@ -25,19 +27,19 @@ namespace tickettranslator
         {
 
             [JsonProperty("text")]
-            public double Text { get; set; }
+            public string Text { get; set; }
 
             [JsonProperty("html")]
-            public double HTML { get; set; }
+            public string HTML { get; set; }
 
             [JsonProperty("markdown")]
-            public double Markdown { get; set; }
+            public string Markdown { get; set; }
 
         }
 
         [FunctionName("webhook")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "webhook")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "webhook")] HttpRequest req,
             [DurableClient] IDurableOrchestrationClient client,
             ILogger log)
         {
@@ -66,7 +68,40 @@ namespace tickettranslator
         public static Task<string> CallTranslationServiceFunction([ActivityTrigger] DevOpsPayload payload,
             ILogger log)
         {
-            return Task.FromResult("translated content");
+            var apimKey = Environment.GetEnvironmentVariable("ENDPOINT_SECRET");
+            var region = Environment.GetEnvironmentVariable("ENDPOINT_REGION");
+            var endpoint = Environment.GetEnvironmentVariable("TRANSLATION_ENDPOINT");
+            var apiVersion = "3.0";
+            var targetLang = "english";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"{endpoint}?translate?api-version={apiVersion}&to={targetLang}");
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Headers.Add($"Ocp-Apim-Subscription-Key:{apimKey}");
+            request.Headers.Add($"Ocp-Apim-Subscription-Region:{region}");
+            request.Headers.Add("charset: UTF-8");
+
+            using (Stream webStream = request.GetRequestStream())
+            using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
+            {
+                requestWriter.Write(payload.Message.Text);
+            }
+
+            try
+            {
+                WebResponse webResponse = request.GetResponse();
+                using (Stream webStream = webResponse.GetResponseStream() ?? Stream.Null)
+                using (StreamReader responseReader = new StreamReader(webStream))
+                {
+                    string response = responseReader.ReadToEnd();
+                    return Task.FromResult(response);
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError(e.Message);
+            }
+
+            return Task.FromResult(String.Empty);
         }
 
         [FunctionName("UpdateDevOpsTicketFunction")]
