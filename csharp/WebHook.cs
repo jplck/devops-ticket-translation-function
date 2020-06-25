@@ -113,6 +113,7 @@ namespace tickettranslator
         public static Task<bool> UpdateDevOpsTicketFunction([ActivityTrigger] string translatedContent,
             ILogger log)
         {
+            //https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1&viewFallbackFrom=azure-devops
             return Task.FromResult(true);
         }
 
