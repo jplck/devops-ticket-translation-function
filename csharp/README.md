@@ -1,0 +1,1 @@
+# devops-ticket-translation-function
