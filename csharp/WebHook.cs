@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System.Net.Http;
 using System.Net;
+using System.Collections.Generic;
 
 namespace tickettranslator
 {
@@ -80,10 +81,14 @@ namespace tickettranslator
             request.Headers.Add($"Ocp-Apim-Subscription-Region:{region}");
             request.Headers.Add("charset: UTF-8");
 
+            var payloadArray = new List<DevOpsMessagePayload>();
+            payloadArray.Add(payload.Message);
+            var content = JsonConvert.SerializeObject(payloadArray);
+
             using (Stream webStream = request.GetRequestStream())
             using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
             {
-                requestWriter.Write(payload.Message.Text);
+                requestWriter.Write(content);
             }
 
             try
