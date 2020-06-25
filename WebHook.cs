@@ -72,8 +72,8 @@ namespace tickettranslator
             var region = Environment.GetEnvironmentVariable("ENDPOINT_REGION");
             var endpoint = Environment.GetEnvironmentVariable("TRANSLATION_ENDPOINT");
             var apiVersion = "3.0";
-            var targetLang = "english";
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"{endpoint}?translate?api-version={apiVersion}&to={targetLang}");
+            var targetLang = "de";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"{endpoint}/translate?api-version={apiVersion}&to={targetLang}");
             request.Method = "POST";
             request.ContentType = "application/json";
             request.Headers.Add($"Ocp-Apim-Subscription-Key:{apimKey}");
