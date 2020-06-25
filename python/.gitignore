@@ -130,5 +130,4 @@ local.settings.json
 .python_packages
 
 # Local Folders
-python-function/data
-
+.venv

@@ -34,30 +34,26 @@ assert personal_access_token is not None
 headers = {
     "Content-Type": "application/json",
     "Ocp-Apim-Subscription-Key": ocp_apim_key,
-    "charset": "UTF-8",
     "Ocp-Apim-Subscription-Region": endpoint_region,
+    "charset": "UTF-8",
 }
 
-endpoint = (
-    f"{translator_endpoint}translate?api-version={api_version}&to={target_language}"
-)
+translator_endpoint += f"translate?api-version={api_version}&to={target_language}"
 
 
 def translate(text) -> str:
     payload = json.dumps([{"text": text}])
-
-    response = requests.request("POST", endpoint, headers=headers, data=payload)
-
-    response_text = json.loads(response.text)
-
-    return response_text[0]["translations"][0]["text"]
+    response = requests.request(
+        "POST", translator_endpoint, headers=headers, data=payload
+    )
+    response_text = json.loads(response.text)[0]["translations"][0]["text"]
+    return response_text
 
 
 def update_devops_workitem(text, project_id, work_item_id, organization_url):
     credentials = BasicAuthentication("", personal_access_token)
     connection = Connection(base_url=organization_url, creds=credentials)
     work_item_client = connection.clients.get_work_item_tracking_client()
-
     work_item_client.update_work_item(
         document=[{"op": "add", "path": f"/fields/{target_field}", "value": text}],
         id=work_item_id,
@@ -67,62 +63,64 @@ def update_devops_workitem(text, project_id, work_item_id, organization_url):
 
 
 def parse_devops_ticket(req_body) -> (str, str, str, str):
-    baseUrl = req_body.get("resourceContainers").get("project").get("baseUrl")
-    project_id = req_body.get("resourceContainers").get("project").get("id")
-    work_item_id = req_body.get("resource").get("workItemId")
-    ticket_description = get_ticket_description(req_body)
-    return baseUrl, project_id, work_item_id, ticket_description
+    return {
+        "baseUrl": req_body["resourceContainers"]["project"]["baseUrl"],
+        "project_id": req_body["resourceContainers"]["project"]["id"],
+        "work_item_id": req_body["resource"]["workItemId"],
+        "ticket_description": get_ticket_description(req_body),
+    }
 
 
 def get_ticket_description(req_body) -> str:
-    """Checks if ticket description has changed or if translated description field is empty. Returns the description string for translation.
-
-    Args:
-        req_body (dict): Request JSON body containing ticket updated information (sent from DevOps to our Webhook).
-
-    Returns:
-        (str): The description string (or None if no translation necessary).
-    """
     logging.info(f"Request: {req_body}")
 
-    try:
-        return req_body.get("resource").get("fields").get(source_field).get("newValue")
-    except AttributeError:
-        logging.info(f"Field '{source_field}' did not change.")
+    if changed_description := (
+        req_body.get("resource", {})
+        .get("fields", {})
+        .get(source_field, {})
+        .get("newValue", None)
+    ):
+        logging.info("'Description' changed -> Translating ticket")
+        return changed_description
 
-    try:
-        if req_body.get("resource").get("revision").get("fields").get(target_field):
-            logging.info(f"Field '{target_field}' has already translated description.")
-            return None
-    except AttributeError:
-        logging.info(f"Field '{target_field}' is empty.")
+    logging.info("No updated 'Description'")
 
-    try:
-        return req_body.get("resource").get("revision").get("fields").get(source_field)
-    except AttributeError:
-        logging.info(f"Field '{source_field}' is also empty.")
+    if (
+        req_body.get("resource", {})
+        .get("revision", {})
+        .get("fields", {})
+        .get(target_field, None)
+    ):
+        logging.info("'Translated Description' already exists -> aborting translation")
         return None
+
+    if description := (
+        req_body.get("resource", {})
+        .get("revision", {})
+        .get("fields", {})
+        .get(source_field, None)
+    ):
+        logging.info("'Translated Description' missing -> Translating 'Description''")
+        return description
+
+    logging.info("'Description' is missing -> aborting translation")
+    return None
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
-
     req_body = req.get_json()
 
-    baseUrl, project_id, work_item_id, ticket_description = parse_devops_ticket(
-        req_body
-    )
+    project_info = parse_devops_ticket(req_body)
 
-    if ticket_description is None:
+    if project_info["ticket_description"] is None:
         return func.HttpResponse("Translation is not necessary.")
 
-    translation = translate(ticket_description)
-
+    translation = translate(project_info["ticket_description"])
     update_devops_workitem(
         text=translation,
-        organization_url=baseUrl,
-        project_id=project_id,
-        work_item_id=work_item_id,
+        organization_url=project_info["baseUrl"],
+        project_id=project_info["project_id"],
+        work_item_id=project_info["work_item_id"],
     )
-
     return func.HttpResponse(translation)
