@@ -7,101 +7,56 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using System.Text;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace tickettranslator
 {
     public static class WebHook
     {
-        public class DevOpsPayload
-        {
-
-            [JsonProperty("message")]
-            public DevOpsMessagePayload Message { get; set; }
-
-            [JsonProperty("resource")]
-            public DevOpsResourcePayload Resource { get; set; }
-
-        }
-
-        public class DevOpsResourcePayload
-        {
-
-            [JsonProperty("id")]
-            public string Id { get; set; }
-
-            [JsonProperty("workItemId")]
-            public string WorkItemId { get; set; }
-
-        }
-
-        public class DevOpsMessagePayload
-        {
-
-            [JsonProperty("text")]
-            public string Text { get; set; }
-
-            [JsonProperty("html")]
-            public string HTML { get; set; }
-
-            [JsonProperty("markdown")]
-            public string Markdown { get; set; }
-
-        }
-
-        public class WorkItemUpdateContainer
-        {
-            public WorkItemUpdateContainer(string operation, string path, string value)
-            {
-                Operation = operation;
-                Path = path;
-                Value = value;
-            }
-
-            [JsonProperty("op")]
-            public string Operation { get; set; }
-
-            [JsonProperty("path")]
-            public string Path { get; set; }
-
-            [JsonProperty("value")]
-            public string Value { get; set; }
-        }
-
         [FunctionName("webhook")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "webhook")] HttpRequest req,
-            [DurableClient] IDurableOrchestrationClient client,
             ILogger log)
         {
             log.LogInformation("Hook has been called.");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var data = JsonConvert.DeserializeObject<DevOpsPayload>(requestBody);
+            var data = JsonConvert.DeserializeObject<Models.DevOpsPayload>(requestBody);
 
-            await client.StartNewAsync("ModelOrchestrator", data);
+            var descriptionNewValue = data.Resource.Fields["System.Description"].NewValue;
+            var descriptionOldValue = data.Resource.Fields["System.Description"].OldValue;
+
+            if (descriptionNewValue != descriptionOldValue)
+            {
+                var translatedContent = await CallTranslationServiceAsync(descriptionNewValue, log);
+
+                var options = new Models.WorkItemUpdateContainerOptions()
+                {
+                    Operation = "replace",
+                    Path = Environment.GetEnvironmentVariable("FIELD"),
+                    Value = translatedContent,
+                };
+
+                var workItemContainer = new Models.WorkItemUpdateContainer()
+                {
+                    Id = data.Resource.WorkItemId,
+                    Options = options,
+                    PAT = Environment.GetEnvironmentVariable("PAT"),
+                    Organization = Environment.GetEnvironmentVariable("ORGANIZATION"),
+                    Project = Environment.GetEnvironmentVariable("PROJECT")
+                };
+
+                await UpdateWorkItemAsync(workItemContainer);
+            }
 
             return new OkObjectResult(requestBody);
         }
 
-        [FunctionName("ModelOrchestrator")]
-        public static async Task ModelOrchestratorAsync(
-            [OrchestrationTrigger] IDurableOrchestrationContext context,
-            ILogger log)
-        {
-            var input = context.GetInput<DevOpsPayload>();
-
-            var validationResult = await context.CallActivityAsync<string>("CallTranslationServiceFunction", input);
-            await context.CallActivityAsync<bool>("UpdateDevOpsTicketFunction", (payload: input, translatedContent: validationResult));
-        }
-
-        [FunctionName("CallTranslationServiceFunction")]
-        public static Task<string> CallTranslationServiceFunction([ActivityTrigger] DevOpsPayload payload,
+        public static Task<string> CallTranslationServiceAsync(string contentToTranslate,
             ILogger log)
         {
             var apimKey = Environment.GetEnvironmentVariable("ENDPOINT_SECRET");
@@ -116,8 +71,7 @@ namespace tickettranslator
             request.Headers.Add($"Ocp-Apim-Subscription-Region:{region}");
             request.Headers.Add("charset: UTF-8");
 
-            var payloadArray = new List<DevOpsMessagePayload>();
-            payloadArray.Add(payload.Message);
+            var payloadArray = new List<Dictionary<string, string>>() { new Dictionary<string, string>() { { "text", contentToTranslate } } };
             var content = JsonConvert.SerializeObject(payloadArray);
 
             using (Stream webStream = request.GetRequestStream())
@@ -133,7 +87,8 @@ namespace tickettranslator
                 using (StreamReader responseReader = new StreamReader(webStream))
                 {
                     string response = responseReader.ReadToEnd();
-                    return Task.FromResult(response);
+                    var translations = JsonConvert.DeserializeObject<List<Models.Translations>>(response);
+                    return Task.FromResult(translations[0].List[0].Text);
                 }
             }
             catch (Exception e)
@@ -144,33 +99,30 @@ namespace tickettranslator
             return Task.FromResult(string.Empty);
         }
 
-        [FunctionName("UpdateDevOpsTicketFunction")]
-        public static async Task<bool> UpdateDevOpsTicketFunction([ActivityTrigger] Tuple<DevOpsPayload, string> contentTuple,
-            ILogger log)
+        private static async Task<bool> UpdateWorkItemAsync(Models.WorkItemUpdateContainer container)
         {
-            var pat = Environment.GetEnvironmentVariable("PAT");
-            var org = Environment.GetEnvironmentVariable("ORGANIZATION");
-            var project = Environment.GetEnvironmentVariable("PROJECT");
-            var field = Environment.GetEnvironmentVariable("FIELD");
-            var wid = contentTuple.Item1.Resource.Id;
-            using (HttpClient client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Content-Type", "application/json-patch+json");
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", 
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("{0}:{1}", "", pat))));
+            var wid = container.Id;
+            var client = PrepareRequest(container);
+            var containerSerialized = JsonConvert.SerializeObject(new List<Models.WorkItemUpdateContainerOptions>() { container.Options });
 
-                var container = new WorkItemUpdateContainer("replace", field, contentTuple.Item2);
-                var containerSerialized = JsonConvert.SerializeObject(container);
-
-                HttpContent content = new StringContent(containerSerialized, Encoding.UTF8, "application/json-patch+json");
-
-                using (HttpResponseMessage response = await client.PatchAsync($"https://dev.azure.com/{org}/{project}/_apis/wit/workitems/{wid}?api-version=5.1", content))
+            HttpContent content = new StringContent(containerSerialized, Encoding.UTF8, "application/json-patch+json");
+            using (HttpResponseMessage response = 
+                await client.PatchAsync($"https://dev.azure.com/{container.Organization}/{container.Project}/_apis/wit/workitems/{wid}?api-version=5.1", content))
                 {
                     return response.IsSuccessStatusCode;
                 }
-            }
-            //https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1&viewFallbackFrom=azure-devops
         }
 
+        public static HttpClient PrepareRequest(Models.WorkItemUpdateContainer container)
+        {
+            HttpClient client = new HttpClient();
+            var token = Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("{0}:{1}", "", container.PAT)));
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
+
+            return client;
+
+            //https://docs.microsoft.com/en-us/rest/api/azure/devops/?view=azure-devops-rest-5.1&viewFallbackFrom=azure-devops
+        }
     }
 }
