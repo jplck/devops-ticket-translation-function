@@ -23,7 +23,7 @@ Last but not least, as both Azure Functions and Cognitive Services are **statele
 
 ### A word about cost
 
-We noticed that using pay-as-you-go services creates uncertainty and worries as the monthly bill becomes unpredictable. The worry is unfounded! Of course, it depends on your workload but if you experiment of have a small project **you probably don't even have to pay a cent** ... or any currency you prefer.
+We noticed that using pay-as-you-go services creates uncertainty and worries as the monthly bill becomes unpredictable. The worry is unfounded! Of course, it depends on your workload but if you experiment or work on a small project **you probably don't even pay a cent** (or any currency you prefer).
 
 The Cognitive Services Translator offers a **[free tier](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/)** (2 million characters/month included). The Azure Functions consumption plan (pay as you go) also offers a **monthly free grant of 1 million requests and 400,000 GB-s resource consumption**. 
 
