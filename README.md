@@ -12,6 +12,7 @@ These teams need an **affordable,** **high-quality**, and **compliant** solution
 This repository contains a **simple step-by-step instruction** and **code** for **your own DevOps Ticket Translation Solution**.
 
 *VIDEO OR GIF ANIMATION*
+![Animation](/docs/images/animation.gif)
 
 Using **Azure Cognitive Services** and **Azure Functions**, this solution is **very affordable and easy to implement**. All you need is an Azure Subscription and - of course - Azure DevOps. 
 
