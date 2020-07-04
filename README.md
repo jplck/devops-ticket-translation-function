@@ -90,7 +90,11 @@ When deploying the function app, make sure to choose a consumption plan which sc
 
 We provide both C# and Python code, so feel free to choose the language you prefer. 
 
+#### Create a Function App
+
 These guides explain how to create your first function from [Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-your-first-function-visual-studio), [Visual Studio Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code), and [the command-line interface](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli). We plan to later add ARM templates for easy deployment. 
+
+Now we'll need to add our code. Follow either the C# or Python section.
 
 ##### C#
 
@@ -129,7 +133,7 @@ You will need to add the following environment variables:
 
 - "**TARGET_LANGUAGE**": A two-character string referring to the target language, for example, "**en**" for English. You can find a list of all code here: https://docs.microsoft.com/en-us/azure/cognitive-services/translator/language-support
 - "**DESCRIPTION_FIELD**": The Work Item Field that we want to translate. The default Description field is "**System.Description**". Go here for more examples: https://docs.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field
-- "**TRANSLATION_FIELD**": The Work Item Field that we update with the translation. If you added the custom field ''Translated Description'' the identifier is "**Custom.Translateddescription**". 
+- "**TRANSLATION_FIELD**": The Work Item Field that contains the translation. If you added the custom field ''Translated Description'' the identifier is "**Custom.Translateddescription**".
 - "**PERSONAL_ACCESS_TOKEN**": The personal access token you created in Azure DevOps.
 
 - "**TRANSLATION_ENDPOINT**": The translation endpoint of your cognitive service resource (see Keys and Endpoint).
