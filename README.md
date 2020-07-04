@@ -36,9 +36,7 @@ In case you want customized translations or translate larger ticket volumes, bot
 
 _Enough marketing - let's get busy ..._
 
-### Foreword (why we refer to other guides)
-
-The documentation for the services we use is very detailed and well maintained. As services and workflows change, we refer to the existing step-by-step guides for each service, in order no to regularly having to adjust our guide.
+By the way, the documentation for DevOps, Functions and Cognitive Services is very detailed and well maintained. As the services and workflows might change in the future, we refer to the step-by-step guides for each service.
 
 ### Requirements
 
@@ -74,13 +72,13 @@ We will need a Cognitive Services Translator resource, this guide explains how t
 
 When creating a resource
 
-- you may choose a free resource (if 2M chars/months suffice and there is no other F1 resource already deployed)
+- you may **choose a free resource** (if 2M chars/months suffice and there is no other F1 resource in your subscription)
 
 and
 
-- pick any region, preferably close to you, or to other services that will use the translator.
+- **pick any region** that suits your needs (consider for example GDPR compliance or minimizing distance between resources).
 
-From your Translator Resource **Keys and Endpoint**, you will later need one of the keys, the endpoint, and the region you deployed to.
+From your Translator Resource **Keys and Endpoint**, you will later need one of the keys, the endpoint, and the region you deployed to, so keep your Browser tab open.
 
 <img src="docs\images\keys_and_endpoint.png" alt="trigger" style="zoom: 67%;" />
 
@@ -96,11 +94,9 @@ From your Translator Resource **Keys and Endpoint**, you will later need one of 
   - translator secret
   - translator region
 
-### Step 4: Azure DevOps Webhook
+### Step 4: Azure DevOps WebHook
 
-We now have everything we need to translate our tickets.
-
-In Azure DevOps under **Project Settings > Service Hooks**, create a **new subscription**. Select **WebHook**, then **next**.
+We now have everything we need to translate our tickets. In Azure DevOps under **Project Settings > Service Hooks**, create a **new subscription**. Select **WebHook**, then **next**.
 
 <img src="docs\images\service_hooks.png" alt="service_hooks" style="zoom:50%;" />
 
@@ -112,13 +108,13 @@ Our action will be sending the ticket to our Azure Function, so all we need is t
 
 <img src="docs\images\action.png" alt="action" style="zoom:67%;" />
 
-Test the connection. If the URL is correct and the function is running you should receive a success message and you can finish the webhook.
+Test the connection. If the URL is correct and the function is running you should receive a success message and you can finish the WebHook.
 
 <img src="docs\images\test_webhook.png" alt="action" style="zoom:67%;" />
 
 #### Testing the translation
 
-To test your new translation service, go to your Project **Boards > Work** items and create a new item or open an existing one. If the description field is empty, add some description that you would like to translate, and hit "save" and observe your **Translated Description** field. The translation should appear within a few seconds (2-10s).
+To test your new translation service, go to your Project **Boards > Work** items and create a new item. Add some description that you would like to translate, and hit "save" and observe your **Translated Description** field. The translation should appear within a few seconds (2-10s).
 
 If no translation appears, it's time for debugging. Go to step 5.
 
