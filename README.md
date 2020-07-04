@@ -20,7 +20,7 @@ Using **Azure Cognitive Services** and **Azure Functions**, this solution is **v
 
 The Cognitive Services Translator uses Microsoft's **high-quality neural translation models**, offering translations between **more than 60 languages** and also the possibility to **train your [Custom Translator](https://docs.microsoft.com/en-us/azure/cognitive-services/translator/translator-info-overview#language-customization) with domain-specific terminology**.
 
-Last but not least, as both Azure Functions and Cognitive Services are **stateless and certified** (functions | [translator](https://www.microsoft.com/en-us/translator/business/notrace/#compliance)), and due to the Translator's **[no-trace](https://www.microsoft.com/en-us/translator/business/notrace/) guarantee** this solution will certainly **comply with your company and state regulations**.
+Last but not least, as both Azure Functions and Cognitive Services are **stateless and certified** (functions | [translator](https://www.microsoft.com/en-us/translator/business/notrace/#compliance)), and due to the Translator's **[no-trace](https://www.microsoft.com/en-us/translator/business/notrace/) guarantee,** this solution will certainly **comply with your company and state regulations**.
 
 ### A word about cost
 
@@ -30,7 +30,7 @@ As long as you stick to standard language models and **stay below 1-2 thousand(!
 
 The Cognitive Services Translator offers a **[free tier](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/)** (2 million characters/month included). The Azure Functions consumption plan (pay as you go) also offers a **monthly free grant of 1 million requests and 400,000 GB-s resource consumption**.
 
-In case you want your own customized translations or translate larger ticket volumes, both Functions and Custom Translator are **quite inexpensive** (see: [Translator](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/) | [Functions](https://azure.microsoft.com/en-us/pricing/details/functions/)).
+In case you want customized translations or translate larger ticket volumes, both Functions and Custom Translator are **quite inexpensive** (see: [Translator](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/) | [Functions](https://azure.microsoft.com/en-us/pricing/details/functions/)).
 
 # Step-by-step instruction
 
@@ -52,7 +52,7 @@ and an
 
 ### Step 1: Azure DevOps
 
-In Azure DevOps you will want to add a custom field as translation target ("Translated Description") and create a Personal Access Token (PAT).
+In Azure DevOps, you will want to add a custom field as your translation target ("Translated Description") and create a Personal Access Token (PAT).
 
 #### Add a custom field
 
@@ -60,7 +60,7 @@ We want to add a new custom field to our Tasks. When following the guide below m
 
 #### Creating a Personal Access Token (PAT)
 
-A Personal Access Token will allow our Translation service to access our Projects and add translations to our Tickets. Please keep in mind, that the translation service will only be able to edit projects, that you personally have access to.
+A Personal Access Token will allow our Translation service to access our Projects and add translations to our Tickets. Please keep in mind, that the translation service will only be able to edit projects, that you have access to.
 
 This guide explains how to create a PAT: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate
 
@@ -74,15 +74,15 @@ We will need a Cognitive Services Translator resource, this guide explains how t
 
 When creating a resource
 
-- you may chose a free resource (if 2M chars/months suffice and there is no other F1 resource already deployed)
+- you may choose a free resource (if 2M chars/months suffice and there is no other F1 resource already deployed)
 
 and
 
-- any region close you like, preferably close to you or other services that will use the translator.
+- pick any region, preferably close to you, or to other services that will use the translator.
 
-From your Translator Resource **Keys and Endpoint**, you will later need one of the keys, the endpoint and the region you deployed to.
+From your Translator Resource **Keys and Endpoint**, you will later need one of the keys, the endpoint, and the region you deployed to.
 
-![keys_and_endpoint](docs\images\keys_and_endpoint.png)
+<img src="docs\images\keys_and_endpoint.png" alt="trigger" style="zoom: 67%;" />
 
 ### Step 3: Azure Function
 
@@ -100,11 +100,11 @@ From your Translator Resource **Keys and Endpoint**, you will later need one of 
 
 We now have everything we need to translate our tickets.
 
-In Azure DevOps under **Project Settings > Service Hooks**, create **new subscription**. Select **Web Hook**, then **next**.
+In Azure DevOps under **Project Settings > Service Hooks**, create a **new subscription**. Select **WebHook**, then **next**.
 
 <img src="docs\images\service_hooks.png" alt="service_hooks" style="zoom:50%;" />
 
-Chose "Work item updated" as trigger, leave the rest at default values.
+Chose "Work item updated" as the trigger, leave the rest at default values.
 
 <img src="docs\images\trigger.png" alt="trigger" style="zoom: 67%;" />
 
@@ -112,9 +112,9 @@ Our action will be sending the ticket to our Azure Function, so all we need is t
 
 <img src="docs\images\action.png" alt="action" style="zoom:67%;" />
 
-Test the connection. If the URL is correct and the function is running you should receive a success message and you can finish the web hook.
+Test the connection. If the URL is correct and the function is running you should receive a success message and you can finish the webhook.
 
-![test_webhook](docs\images\test_webhook.png)
+<img src="docs\images\test_webhook.png" alt="action" style="zoom:67%;" />
 
 #### Testing the translation
 
