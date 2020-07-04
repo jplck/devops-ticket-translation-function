@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "TRANSLATION_ENDPOINT": "https://api-eur.cognitive.microsofttranslator.com/",
+    "ENDPOINT_SECRET": "",
+    "ENDPOINT_REGION": "westeurope",
+    "PERSONAL_ACCESS_TOKEN": "",
+    "DESCRIPTION_FIELD": "System.Description",
+    "TRANSLATION_FIELD": "Custom.Translateddescription",
+    "TARGET_LANGUAGE": "en",
+    "API_VERSION": "3.0"
+  }
+}
