@@ -4,12 +4,6 @@
   "parameters": {
     "PAT": {
       "value": "ADDYOURPATHERE"
-    },
-    "repoURL": {
-      "value": "https://github.com/jhchein/devops-translate-python.git"
-    },
-    "branch": {
-      "value": "master"
     }
   }
 }

@@ -9,16 +9,13 @@
                 "description": "The name of your Web Site."
             }
         },
-        "storageAccountName": {
-            "type": "String",
-            "defaultValue": "[concat('store', uniqueString(resourceGroup().id))]"
-        },
         "location": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Location for all resources."
-            }
+            "defaultValue": "westeurope"
+        },
+        "storageAccountPrefix": {
+            "type": "String",
+            "defaultValue": "store"
         },
         "PAT": {
             "type": "securestring",
@@ -46,19 +43,12 @@
                 "S3",
                 "S4"
             ]
-        },
-        "repoUrl": {
-            "type": "string",
-            "defaultValue": "https://github.com/jhchein/devops-translate-python.git"
-        },
-        "branch": {
-            "defaultValue": "master",
-            "type": "string"
         }
     },
     "variables": {
         "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
-        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+        "storageAccountName": "[ concat(parameters('storageAccountPrefix'), uniqueString(resourceGroup().id)) ]",
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
     },
     "resources": [
         {
@@ -69,7 +59,7 @@
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
                 "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
             ],
             "properties": {
@@ -95,11 +85,11 @@
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
                         },
                         {
                             "name": "AzureWebJobsDashboard",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
@@ -138,22 +128,7 @@
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "clientAffinityEnabled": false
             },
-            "resources": [
-                {
-                    "apiVersion": "2018-11-01",
-                    "name": "web",
-                    "type": "sourcecontrols",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
-                    ],
-                    "properties": {
-                        "RepoUrl": "[parameters('repoUrl')]",
-                        "branch": "[parameters('branch')]",
-                        "IsManualIntegration": true
-                    },
-                    "location": "[parameters('location')]"
-                }
-            ]
+            "resources": []
         },
         {
             "type": "Microsoft.Web/serverfarms",
@@ -171,7 +146,7 @@
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('storageAccountName')]",
+            "name": "[variables('storageAccountName')]",
             "apiVersion": "2018-02-01",
             "location": "[parameters('location')]",
             "kind": "StorageV2",
