@@ -10,6 +10,8 @@ These teams need an **affordable,** **high-quality**, and **compliant** solution
 
 ## The Solution
 
+[![Deploy to Azure](https://azurecomcdn.azureedge.net/mediahandler/acomblog/media/Default/blog/deploybutton.png)](https://azuredeploy.net/)
+
 This repository contains a **simple step-by-step instruction** and **code** for **your own DevOps Ticket Translation Solution**.
 
 ![Animation](/docs/images/animation.gif)
