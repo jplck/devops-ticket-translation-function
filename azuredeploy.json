@@ -73,6 +73,9 @@
                 "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
             ],
             "properties": {
+                "numberOfWorkers": -1,
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.8",
                 "name": "[parameters('siteName')]",
                 "siteConfig": {
                     "pythonVersion": "3.8",
