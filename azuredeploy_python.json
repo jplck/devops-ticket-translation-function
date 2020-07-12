@@ -42,7 +42,10 @@
             "name": "[variables('appFunctionName')]",
             "kind": "functionapp,linux",
             "location": "[variables('location')]",
-
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
+            ],
             "properties": {
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",

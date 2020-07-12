@@ -68,11 +68,7 @@
                     "translatorLocation": { "value": "[parameters('translatorLocation')]" },
                     "appNamePrefix": { "value": "[parameters('appNamePrefix')]" }
                 }
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
-            ]
+            }
         },
 
         {
