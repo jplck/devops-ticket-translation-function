@@ -19,12 +19,6 @@
             "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
             "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
         },
-        "azureFunctionRuntime": {
-            "allowedValues": [ "python", "dotnet" ],
-            "defaultValue": "python",
-            "metadata": { "description": "The Azure Function runtime you want to use." },
-            "type": "string"
-        },
         "appNamePrefix": {
             "type": "String",
             "defaultValue": "translate-",
@@ -68,7 +62,7 @@
                     "appSettings": [
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "[parameters('azureFunctionRuntime')]"
+                            "value": "python"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
