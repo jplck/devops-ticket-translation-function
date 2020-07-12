@@ -59,9 +59,13 @@
             "type": "Microsoft.Resources/deployments",
             "condition": "[equals(parameters('azureFunctionRuntime'), 'python')]",
             "apiVersion": "2019-10-01",
+
             "properties": {
                 "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/python/azuredeploy.json" },
                 "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "parameters": {
                     "PAT": { "value": "[parameters('PAT')]" },
                     "targetLanguage": { "value": "[parameters('targetLanguage')]" },
