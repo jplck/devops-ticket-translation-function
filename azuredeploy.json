@@ -50,7 +50,8 @@
     "variables": {
         "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
         "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
-        "location": "[resourceGroup().location]"
+        "location": "[resourceGroup().location]",
+        "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -66,7 +67,10 @@
                     "PAT": { "value": "[parameters('PAT')]" },
                     "targetLanguage": { "value": "[parameters('targetLanguage')]" },
                     "translatorLocation": { "value": "[parameters('translatorLocation')]" },
-                    "appNamePrefix": { "value": "[parameters('appNamePrefix')]" }
+                    "storageAccountName": { "value": "[variables('storageAccountName')]" },
+                    "translatorAccountName": { "value": "[variables('translatorAccountName')]" },
+                    "appFunctionName": { "value": "[variables('appFunctionName')]" },
+                    "location": { "value": "[variables('location')]" }
                 }
             }
         },

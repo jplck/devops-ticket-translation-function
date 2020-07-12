@@ -19,38 +19,46 @@
             "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
             "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
         },
-        "appNamePrefix": {
-            "type": "String",
-            "defaultValue": "translate-",
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[ concat('store', uniqueString(resourceGroup().id)) ]",
             "minLength": 3,
-            "maxLength": 11,
-            "metadata": { "description": "Prefix of your translatorfunction. A unique ID will be added to avoid resource name conflicts." }
+            "maxLength": 24
+        },
+        "translatorAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('translator-', resourceGroup().name)]"
+        },
+        "appFunctionName": {
+            "type": "string",
+            "defaultValue": "[concat('translate-', uniqueString(resourceGroup().id))]"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
         }
     },
     "functions": [],
     "variables": {
-        "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
-        "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]",
-        "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
-        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "location": "[resourceGroup().location]"
+
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-02-01",
-            "name": "[variables('appFunctionName')]",
+            "name": "[parameters('appFunctionName')]",
             "kind": "functionapp,linux",
-            "location": "[variables('location')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
             ],
             "properties": {
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",
                 "linuxFxVersion": "PYTHON|3.8",
-                "name": "[variables('appFunctionName')]",
+                "name": "[parameters('appFunctionName')]",
                 "reserved": true,
                 "siteConfig": {
                     "pythonVersion": "3.8",
@@ -70,15 +78,15 @@
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
-                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]"
+                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',parameters('translatorAccountName'))).endpoint]"
                         },
                         {
                             "name": "ENDPOINT_SECRET",
-                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]"
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName')), '2017-04-18').key1]"
                         },
                         {
                             "name": "ENDPOINT_REGION",
