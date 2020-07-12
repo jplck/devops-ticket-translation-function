@@ -48,7 +48,6 @@
         }
     },
     "variables": {
-        "hostingPlanName": "[concat('hostingplan-', uniqueString(resourceGroup().id))]",
         "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
         "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]",
         "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
@@ -58,6 +57,7 @@
     "resources": [
         {
             "type": "Microsoft.Web/sites",
+            "condition": "[equals(parameters('azureFunctionRuntime'), 'python')]",
             "apiVersion": "2018-02-01",
             "name": "[variables('appFunctionName')]",
             "kind": "functionapp,linux",
