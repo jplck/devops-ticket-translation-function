@@ -55,10 +55,10 @@
     },
     "resources": [
         {
+            "name": "pythonFunctionDeployment",
             "type": "Microsoft.Resources/deployments",
             "condition": "[equals(parameters('azureFunctionRuntime'), 'python')]",
             "apiVersion": "2019-10-01",
-            "name": "pythonFunctionDeployment",
             "properties": {
                 "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/python/azuredeploy.json" },
                 "mode": "Incremental",
@@ -71,7 +71,11 @@
                     "appFunctionName": { "value": "[variables('appFunctionName')]" },
                     "location": { "value": "[variables('location')]" }
                 }
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
+            ]
         },
 
         {
