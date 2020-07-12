@@ -10,7 +10,7 @@ These teams need an **affordable,** **high-quality**, and **compliant** solution
 
 ## The Solution
 
-[![Deploy to Azure](https://azurecomcdn.azureedge.net/mediahandler/acomblog/media/Default/blog/deploybutton.png)](https://azuredeploy.net/)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fpython-deployment-button%2Fazuredeploy.json)
 
 This repository contains a **simple step-by-step instruction** and **code** for **your own DevOps Ticket Translation Solution**.
 
