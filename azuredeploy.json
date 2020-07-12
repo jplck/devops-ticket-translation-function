@@ -35,7 +35,7 @@
         },
         "azureFunctionRuntime": {
             "allowedValues": [ "python", "dotnet" ],
-            "defaultValue": [ "python" ],
+            "defaultValue": "python",
             "metadata": { "description": "The Azure Function runtime you want to use." },
             "type": "string"
         },
@@ -49,7 +49,7 @@
     },
     "variables": {
         "hostingPlanName": "[concat('hostingplan-', uniqueString(resourceGroup().id))]",
-        "storageAccountName": "[ concat('storage-', uniqueString(resourceGroup().id)) ]",
+        "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
         "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]",
         "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
         "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
@@ -89,7 +89,7 @@
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
