@@ -71,6 +71,7 @@
                 "netFrameworkVersion": "v4.0",
                 "linuxFxVersion": "PYTHON|3.8",
                 "name": "[variables('appFunctionName')]",
+                "reserved": true,
                 "siteConfig": {
                     "pythonVersion": "3.8",
                     "cors": {
