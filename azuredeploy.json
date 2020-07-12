@@ -49,6 +49,7 @@
     },
     "variables": {
         "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
         "location": "[resourceGroup().location]",
         "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]"
@@ -70,10 +71,11 @@
                     "PAT": { "value": "[parameters('PAT')]" },
                     "targetLanguage": { "value": "[parameters('targetLanguage')]" },
                     "translatorLocation": { "value": "[parameters('translatorLocation')]" },
-                    "storageAccountName": { "value": "[variables('storageAccountName')]" },
-                    "translatorAccountName": { "value": "[variables('translatorAccountName')]" },
                     "appFunctionName": { "value": "[variables('appFunctionName')]" },
-                    "location": { "value": "[variables('location')]" }
+                    "location": { "value": "[variables('location')]" },
+                    "translationEndpoint": { "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]" },
+                    "translatorSecret": { "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]" },
+                    "storageEndpoint": { "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]" }
                 }
             },
             "dependsOn": [

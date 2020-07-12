@@ -19,30 +19,19 @@
             "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
             "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
         },
-        "storageAccountName": {
-            "type": "string",
-            "defaultValue": "[ concat('store', uniqueString(resourceGroup().id)) ]",
-            "minLength": 3,
-            "maxLength": 24
-        },
-        "translatorAccountName": {
-            "type": "string",
-            "defaultValue": "[concat('translator-', resourceGroup().name)]"
-        },
         "appFunctionName": {
-            "type": "string",
-            "defaultValue": "[concat('translate-', uniqueString(resourceGroup().id))]"
+            "type": "string"
         },
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]"
-        }
+        },
+        "translationEndpoint": { "type": "string" },
+        "translatorSecret": { "type": "securestring" },
+        "storageEndpoint": { "type": "string" }
     },
     "functions": [],
-    "variables": {
-
-        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
-    },
+    "variables": {},
     "resources": [
         {
             "type": "Microsoft.Web/sites",
@@ -74,15 +63,15 @@
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+                            "value": "[parameters('storageEndpoint')]"
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
-                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',parameters('translatorAccountName'))).endpoint]"
+                            "value": "[parameters('translationEndpoint')]"
                         },
                         {
                             "name": "ENDPOINT_SECRET",
-                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName')), '2017-04-18').key1]"
+                            "value": "[parameters('translatorSecret')]"
                         },
                         {
                             "name": "ENDPOINT_REGION",
