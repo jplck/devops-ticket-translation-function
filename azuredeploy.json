@@ -23,13 +23,7 @@
                 "description": "Azure DevOps Personal Access Token"
             }
         },
-        "translatorAccountName": {
-            "defaultValue": "TextTranslation",
-            "metadata": {
-                "description": "Display name of Text Translation API account"
-            },
-            "type": "string"
-        },
+
         "SKU": {
             "type": "string",
             "metadata": {
@@ -48,7 +42,8 @@
     "variables": {
         "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
         "storageAccountName": "[ concat(parameters('storageAccountPrefix'), uniqueString(resourceGroup().id)) ]",
-        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "translatorAccountName": "[concat('translator-', resourceGroup().name)]"
     },
     "resources": [
         {
@@ -60,7 +55,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
             ],
             "properties": {
                 "numberOfWorkers": -1,
@@ -93,11 +88,11 @@
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
-                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',parameters('translatorAccountName'))).endpoint]"
+                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]"
                         },
                         {
                             "name": "ENDPOINT_SECRET",
-                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName')), '2017-04-18').key1]"
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]"
                         },
                         {
                             "name": "ENDPOINT_REGION",
@@ -157,7 +152,7 @@
         {
             "type": "Microsoft.CognitiveServices/accounts",
             "apiVersion": "2017-04-18",
-            "name": "[parameters('translatorAccountName')]",
+            "name": "[variables('translatorAccountName')]",
             "location": "[parameters('location')]",
             "kind": "TextTranslation",
             "sku": {
