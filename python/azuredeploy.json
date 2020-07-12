@@ -112,6 +112,10 @@
                 },
                 "clientAffinityEnabled": false
             },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
+            ],
             "resources": []
         }
     ],
