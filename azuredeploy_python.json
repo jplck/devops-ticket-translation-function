@@ -23,7 +23,7 @@
             "type": "String",
             "defaultValue": "translate-",
             "minLength": 3,
-            "maxLength": 12,
+            "maxLength": 11,
             "metadata": { "description": "Prefix of your translatorfunction. A unique ID will be added to avoid resource name conflicts." }
         }
     },
@@ -42,10 +42,7 @@
             "name": "[variables('appFunctionName')]",
             "kind": "functionapp,linux",
             "location": "[variables('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
-            ],
+
             "properties": {
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",
