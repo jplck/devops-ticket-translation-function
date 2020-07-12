@@ -40,7 +40,7 @@
             "type": "string"
         },
         "appNamePrefix": {
-            "type": "String",
+            "type": "string",
             "defaultValue": "translate-",
             "minLength": 3,
             "maxLength": 12,
