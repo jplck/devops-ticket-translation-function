@@ -2,32 +2,27 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "siteName": {
-            "type": "string",
-            "defaultValue": "[concat('translate-', uniqueString(resourceGroup().id))]",
-            "metadata": {
-                "description": "The name of your Web Site."
-            }
-        },
-        "location": {
-            "type": "string",
-            "defaultValue": "westeurope"
-        },
-        "storageAccountPrefix": {
-            "type": "String",
-            "defaultValue": "store"
-        },
         "PAT": {
             "type": "securestring",
             "metadata": {
                 "description": "Azure DevOps Personal Access Token"
             }
         },
-
+        "targetLanguage": {
+            "type": "string",
+            "defaultValue": "en",
+            "allowedValues": [ "en", "cn", "fr", "es", "de", "it", "ru", "af", "ar", "bn", "bs", "bg", "yue", "ca", "zh-Hans", "zh-Hant", "hr", "cs", "da", "nl", "et", "fj", "fil", "fi", "el", "gu", "ht", "he", "hi", "mww", "hu", "is", "id", "ga", "ja", "kn", "kk", "sw", "tlh-Latn", "tlh-Piqd", "ko", "lv", "lt", "mg", "ms", "ml", "mt", "mi", "mr", "nb", "fa", "pl", "pt-br", "pt-pt", "ba", "otq", "ro", "sm", "sr-Cyrl", "sr-Latn", "sk", "sl", "sv", "ty", "ta", "te", "th", "to", "tr", "uk", "ur", "vi", "cy", "yua" ]
+        },
+        "translatorLocation": {
+            "type": "string",
+            "defaultValue": "global",
+            "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
+            "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
+        },
         "SKU": {
             "type": "string",
             "metadata": {
-                "description": "SKU for Text Translation API"
+                "description": "SKU for Text Translation API.\nF0 is the free tier, but only allowed once per subscription. Upon deployment conflicts you'll like want to switch to S1."
             },
             "defaultValue": "F0",
             "allowedValues": [
@@ -37,21 +32,36 @@
                 "S3",
                 "S4"
             ]
+        },
+        "azureFunctionRuntime": {
+            "allowedValues": [ "python", "dotnet" ],
+            "defaultValue": [ "python" ],
+            "metadata": { "description": "The Azure Function runtime you want to use." },
+            "type": "string"
+        },
+        "appNamePrefix": {
+            "type": "String",
+            "defaultValue": "translate-",
+            "minLength": 3,
+            "maxLength": 12,
+            "metadata": { "description": "Prefix of your translatorfunction. A unique ID will be added to avoid resource name conflicts." }
         }
     },
     "variables": {
-        "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
-        "storageAccountName": "[ concat(parameters('storageAccountPrefix'), uniqueString(resourceGroup().id)) ]",
+        "hostingPlanName": "[concat('hostingplan-', uniqueString(resourceGroup().id))]",
+        "storageAccountName": "[ concat('storage-', uniqueString(resourceGroup().id)) ]",
+        "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]",
+        "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
         "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "translatorAccountName": "[concat('translator-', resourceGroup().name)]"
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-02-01",
-            "name": "[parameters('siteName')]",
+            "name": "[variables('appFunctionName')]",
             "kind": "functionapp,linux",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
@@ -61,7 +71,7 @@
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",
                 "linuxFxVersion": "PYTHON|3.8",
-                "name": "[parameters('siteName')]",
+                "name": "[variables('appFunctionName')]",
                 "siteConfig": {
                     "pythonVersion": "3.8",
                     "cors": {
@@ -72,7 +82,7 @@
                     "appSettings": [
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "python"
+                            "value": "[parameters('azureFunctionRuntime')]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -81,10 +91,6 @@
                         {
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
-                        },
-                        {
-                            "name": "AzureWebJobsDashboard",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
                         },
                         {
                             "name": "TRANSLATION_ENDPOINT",
@@ -96,7 +102,7 @@
                         },
                         {
                             "name": "ENDPOINT_REGION",
-                            "value": "[parameters('location')]"
+                            "value": "[parameters('translatorLocation')]"
                         },
                         {
                             "name": "PERSONAL_ACCESS_TOKEN",
@@ -112,7 +118,7 @@
                         },
                         {
                             "name": "TARGET_LANGUAGE",
-                            "value": "en"
+                            "value": "[parameters('targetLanguage')]"
                         },
                         {
                             "name": "API_VERSION",
@@ -126,24 +132,10 @@
             "resources": []
         },
         {
-            "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2018-02-01",
-            "name": "[variables('hostingPlanName')]",
-            "location": "[parameters('location')]",
-            "kind": "linux",
-            "properties": {
-                "reserved": true
-            },
-            "sku": {
-                "Tier": "Dynamic",
-                "Name": "Y1"
-            }
-        },
-        {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
             "apiVersion": "2018-02-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "kind": "StorageV2",
             "sku": {
                 "name": "Standard_LRS"
@@ -153,7 +145,7 @@
             "type": "Microsoft.CognitiveServices/accounts",
             "apiVersion": "2017-04-18",
             "name": "[variables('translatorAccountName')]",
-            "location": "[parameters('location')]",
+            "location": "[parameters('translatorLocation')]",
             "kind": "TextTranslation",
             "sku": {
                 "name": "[parameters('SKU')]"

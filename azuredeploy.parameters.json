@@ -4,6 +4,13 @@
   "parameters": {
     "PAT": {
       "value": "ADDYOURPATHERE"
-    }
+    },
+    "translatorLocation": {
+      "value": "global"
+    },
+    "SKU": { "value": "S1" },
+    "azureFunctionRuntime": { "value": "dotnet" },
+    "targetLanguage": { "value": "en" },
+    "appNamePrefix": { "value": "translate-" }
   }
 }
