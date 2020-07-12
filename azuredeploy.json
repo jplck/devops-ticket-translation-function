@@ -60,7 +60,7 @@
             "name": "pythonFunctionDeployment",
             "properties": {
                 "expressionEvaluationOptions": { "scope": "outer" },
-                "templateLink": { "uri": "https://github.com/jplck/devops-ticket-translation-function/blob/python-deployment-button/azuredeploy_python.json" },
+                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/azuredeploy.json" },
                 "mode": "Incremental",
                 "parameters": {
                     "PAT": { "value": "[parameters('PAT')]" },
