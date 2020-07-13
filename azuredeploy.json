@@ -50,7 +50,7 @@
     "variables": {
         "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
         "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "translatorAccountName": "[concat('translator-', resourceGroup().name)]",
+        "translatorAccountName": "[concat('translator-', uniqueString(resourceGroup().id))]",
         "location": "[resourceGroup().location]",
         "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]"
     },
