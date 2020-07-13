@@ -89,7 +89,7 @@
             "condition": "[equals(parameters('azureFunctionRuntime'), 'dotnet')]",
             "apiVersion": "2019-10-01",
             "properties": {
-                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/python/azuredeploy.json" },
+                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/csharp/azuredeploy.json" },
                 "mode": "Incremental",
                 "expressionEvaluationOptions": {
                     "scope": "inner"
