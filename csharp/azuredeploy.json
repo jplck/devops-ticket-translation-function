@@ -30,12 +30,10 @@
         "translatorSecret": { "type": "securestring" },
         "storageEndpoint": { "type": "string" },
         "repoUrl": {
-            "type": "string",
-            "defaultValue": "https://github.com/jplck/devops-ticket-translation-function"
+            "type": "string"
         },
         "branch": {
-            "type": "string",
-            "defaultValue": "master"
+            "type": "string"
         }
     },
     "functions": [],
