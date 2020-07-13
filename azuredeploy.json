@@ -34,8 +34,8 @@
             ]
         },
         "azureFunctionRuntime": {
-            "allowedValues": [ "python", "dotnet" ],
-            "defaultValue": "python",
+            "allowedValues": [ "dotnet", "python" ],
+            "defaultValue": "dotnet",
             "metadata": { "description": "The Azure Function runtime you want to use." },
             "type": "string"
         },
