@@ -7,4 +7,5 @@ pythondeployment.zip
 azuredeploy.json
 azuredeploy.parameters.json
 LICENSE
-README
+README.md
+example_local.settings.json
