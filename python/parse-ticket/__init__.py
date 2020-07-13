@@ -80,12 +80,13 @@ def parse_devops_ticket(req_body) -> (str, str, str, str):
 def get_ticket_description(req_body) -> str:
     logging.info(f"Request: {req_body}")
 
-    if changed_description := (
+    changed_description = (
         req_body.get("resource", {})
         .get("fields", {})
         .get(source_field, {})
         .get("newValue", None)
-    ):
+    )
+    if changed_description:
         logging.info("'Description' changed -> Translating ticket")
         return changed_description
 
