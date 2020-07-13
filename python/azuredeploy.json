@@ -31,7 +31,7 @@
         "storageEndpoint": { "type": "string" }
     },
     "functions": [],
-    "variables": {},
+    "variables": { "appInsightsName": "[ concat('appinsights', uniqueString(resourceGroup().id)) ]" },
     "resources": [
         {
             "type": "Microsoft.Web/sites",
@@ -39,6 +39,9 @@
             "name": "[parameters('appFunctionName')]",
             "kind": "functionapp,linux",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+            ],
             "properties": {
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",
@@ -96,12 +99,38 @@
                         {
                             "name": "API_VERSION",
                             "value": "3.0"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
                         }
                     ]
                 },
                 "clientAffinityEnabled": false
             },
-            "resources": []
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "Deploy",
+                    "apiVersion": "2018-11-01",
+                    "dependsOn": [ "[concat('Microsoft.Web/sites/', parameters('appFunctionName'))]" ],
+                    "properties": { "packageUri": "bla" }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-05-01",
+            "name": "[variables('appInsightsName')]",
+            "type": "Microsoft.Insights/components",
+            "kind": "web",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('appFunctionName'))]": "Resource"
+            },
+            "properties": {
+                "Application_Type": "web",
+                "ApplicationId": "[variables('appInsightsName')]"
+            }
         }
     ],
     "outputs": {}
