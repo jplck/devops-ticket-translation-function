@@ -10,8 +10,6 @@ These teams need an **affordable,** **high-quality**, and **compliant** solution
 
 ## The Solution
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fpython-deployment-button%2Fazuredeploy.json)
-
 This repository contains a **simple step-by-step instruction** and **code** for **your own DevOps Ticket Translation Solution**.
 
 ![Animation](/docs/images/animation.gif)
@@ -64,85 +62,31 @@ A Personal Access Token will allow our Translation service to access our Project
 
 This guide explains how to create a PAT: https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate
 
-**Make sure to keep your PAT as you will need it later.**
+**Make sure to keep your PAT.** You will not be able to retrieve it afterwards and need it for the next step.
 
-### Step 2: Cognitive Services
+### Step 2: Azure
 
-#### Create a Cognitive Services Translator
+Using Azure Resource Management (ARM) Templates makes deployment very simple.
 
-We will need a Cognitive Services Translator resource, this guide explains how to create one: https://docs.microsoft.com/en-us/azure/cognitive-services/translator/translator-how-to-signup
+Click the "Deploy to Azure" Button and follow the guidance below:
 
-When creating a resource
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fpython-deployment-button%2Fazuredeploy.json)
 
-- you may **choose a free resource** (if 2M chars/months suffice and there is no other F1 resource in your subscription)
+* Select a Region that's closest to you or your customers
+* Enter the Azure DevOps **Personal Access Token**
+* Translator Location: Stick with 'global' unless you have specific requirements (e.g. GDPR).
+* SKU : The pricing tier of the Cognitive Service Translator. Stick with F0 if 2M chars/months suffice and there is no other F0 resource in your subscription.
+* Azure Function Runtime: Preferrably use dotnet (C#) as Python deployment takes a bit extra effort.
 
-and
+#### Step 2b (optional): Deploy Python Azure Function
 
-- **pick any region** that suits your needs (consider for example GDPR compliance or minimizing the distance between resources).
+The Python function cannot be deployed from GitHub (therefore dotnet deployment is preffered).
 
-Once your Translator Resource is deployed, go to **Keys and Endpoint**. You will need one of the keys, the endpoint, and the location, so keep your browser tab open.
-
-<img src="docs\images\keys_and_endpoint.png" alt="trigger" style="zoom: 67%;" />
-
-### Step 3: Azure Function
-
-The Azure Function is our serverless compute, that receives a request from Azure DevOps, parses the Work Item information, translates the description and updates the Work Item. 
-
-When deploying the function app, make sure to choose a consumption plan which scales better and is cheaper for our scenario. 
-
-We provide both C# and Python code, so feel free to choose the language you prefer. 
-
-#### Create a Function App
-
-These guides explain how to create your first function from [Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-your-first-function-visual-studio), [Visual Studio Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code), and [the command-line interface](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli). We plan to later add ARM templates for easy deployment. 
-
-Now we'll need to add our code. Follow either the C# or Python section.
-
-##### C#
-
-*TBD*
-
-##### Python 3.8+
-
-Simply add the files from the python directory and publish the **parse-ticket** function as described.
+Clone this repository and publish the **parse-ticket** function from the python directory as in these guide for [Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-your-first-function-visual-studio), [Visual Studio Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code), and [the command-line interface](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli)
 
 If you want to debug, make sure to add environment variables (see below) by replacing your local.settings.json with the [example file](python/example_local.settings.json) we provided and updating the fields (see the section on Function App Setting below).
 
-```json
-{
- "IsEncrypted": false,
- "Values": {
-  "FUNCTIONS_WORKER_RUNTIME": "python",
-  "TRANSLATION_ENDPOINT": "https://api-eur.cognitive.microsofttranslator.com/",
-  "ENDPOINT_SECRET": "SOMEVERYLONGSTRING",
-  "ENDPOINT_REGION": "westeurope",
-  "PERSONAL_ACCESS_TOKEN": "ADDYOURPATHERE",
-  "DESCRIPTION_FIELD": "System.Description",
-  "TRANSLATION_FIELD": "Custom.Translateddescription",
-  "TARGET_LANGUAGE": "en",
-  "API_VERSION": "3.0"
- }
-}
-```
-
-#### Function App Settings
-
-We use environment variables to configure our app. The following guide explains how to add function app settings: https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings
-
-![environment_variables](docs/images/environment_variables.PNG)
-
-You will need to add the following environment variables:
-
-- "**TARGET_LANGUAGE**": A two-character string referring to the target language, for example, "**en**" for English. You can find a list of all code here: https://docs.microsoft.com/en-us/azure/cognitive-services/translator/language-support
-- "**DESCRIPTION_FIELD**": The Work Item Field that we want to translate. The default Description field is "**System.Description**". Go here for more examples: https://docs.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field
-- "**TRANSLATION_FIELD**": The Work Item Field that contains the translation. If you added the custom field ''Translated Description'' the identifier is "**Custom.Translateddescription**".
-- "**PERSONAL_ACCESS_TOKEN**": The personal access token you created in Azure DevOps.
-
-- "**TRANSLATION_ENDPOINT**": The translation endpoint of your cognitive service resource (see Keys and Endpoint).
-- "**ENDPOINT_SECRET**": One of the keys for your cognitive service resource (see Keys and Endpoint)
-- "**ENDPOINT_REGION**": The location of your cognitive service resource (see Keys and Endpoint), e.g. "westeurope"
-
-### Step 4: Azure DevOps WebHook
+### Step 3: Azure DevOps WebHook
 
 We now have everything we need to translate our tickets. In Azure DevOps under **Project Settings > Service Hooks**, create a **new subscription**. Select **WebHook**, then **next**.
 
@@ -166,11 +110,11 @@ To test your new translation service, go to your Project **Boards > Work** items
 
 If no translation appears, it's time for debugging. Go to step 5.
 
-### (optional) Step 5: Azure Function Live Monitoring
+### (optional) Step 4: Azure Function Live Monitoring
 
 https://docs.microsoft.com/en-us/azure/azure-functions/functions-monitoring
 
-### (optional) Step 6: Custom Translator
+### (optional) Step 5: Custom Translator
 
 https://portal.customtranslator.azure.ai/
 
