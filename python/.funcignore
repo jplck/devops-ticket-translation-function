@@ -3,3 +3,8 @@
 local.settings.json
 test
 .venv
+pythondeployment.zip
+azuredeploy.json
+azuredeploy.parameters.json
+LICENSE
+README
