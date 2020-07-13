@@ -63,6 +63,14 @@
                             "value": "dotnet"
                         },
                         {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[parameters('storageEndpoint')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(parameters('appFunctionName'))]"
+                        },
+                        {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
                         },
