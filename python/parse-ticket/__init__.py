@@ -100,12 +100,13 @@ def get_ticket_description(req_body) -> str:
         logging.info("'Translated Description' already exists -> aborting translation")
         return None
 
-    if description := (
+    description = (
         req_body.get("resource", {})
         .get("revision", {})
         .get("fields", {})
         .get(source_field, None)
-    ):
+    )
+    if description:
         logging.info("'Translated Description' missing -> Translating 'Description''")
         return description
 
