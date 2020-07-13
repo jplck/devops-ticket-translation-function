@@ -43,11 +43,22 @@
                 "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
             ],
             "properties": {
+                "enabled": true,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
                 "numberOfWorkers": -1,
                 "netFrameworkVersion": "v4.0",
                 "linuxFxVersion": "PYTHON|3.8",
                 "name": "[parameters('appFunctionName')]",
-                "reserved": true,
                 "siteConfig": {
                     "pythonVersion": "3.8",
                     "cors": {
@@ -105,8 +116,7 @@
                             "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
                         }
                     ]
-                },
-                "clientAffinityEnabled": false
+                }
             },
             "resources": []
         },
