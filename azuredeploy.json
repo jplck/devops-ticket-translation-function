@@ -84,7 +84,7 @@
             ]
         },
         {
-            "name": "pythonFunctionDeployment",
+            "name": "dotnetFunctionDeployment",
             "type": "Microsoft.Resources/deployments",
             "condition": "[equals(parameters('azureFunctionRuntime'), 'dotnet')]",
             "apiVersion": "2019-10-01",
