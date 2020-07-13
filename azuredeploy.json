@@ -38,13 +38,6 @@
             "defaultValue": "dotnet",
             "metadata": { "description": "The Azure Function runtime you want to use." },
             "type": "string"
-        },
-        "appNamePrefix": {
-            "type": "string",
-            "defaultValue": "translate-",
-            "minLength": 3,
-            "maxLength": 12,
-            "metadata": { "description": "Prefix of your translatorfunction. A unique ID will be added to avoid resource name conflicts." }
         }
     },
     "variables": {
@@ -52,7 +45,7 @@
         "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "translatorAccountName": "[concat('translator-', uniqueString(resourceGroup().id))]",
         "location": "[resourceGroup().location]",
-        "appFunctionName": "[concat(parameters('appNamePrefix'), uniqueString(resourceGroup().id))]"
+        "appFunctionName": "[concat('translate-', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
