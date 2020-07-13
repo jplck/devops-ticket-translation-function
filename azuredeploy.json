@@ -83,7 +83,35 @@
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
             ]
         },
-
+        {
+            "name": "pythonFunctionDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[equals(parameters('azureFunctionRuntime'), 'dotnet')]",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/python/azuredeploy.json" },
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    "PAT": { "value": "[parameters('PAT')]" },
+                    "targetLanguage": { "value": "[parameters('targetLanguage')]" },
+                    "translatorLocation": { "value": "[parameters('translatorLocation')]" },
+                    "appFunctionName": { "value": "[variables('appFunctionName')]" },
+                    "location": { "value": "[variables('location')]" },
+                    "translationEndpoint": { "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]" },
+                    "translatorSecret": { "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]" },
+                    "storageEndpoint": { "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]" },
+                    "repoUrl": { "value": "https://github.com/jplck/devops-ticket-translation-function" },
+                    "branch": { "value": "master" }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
+            ]
+        },
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
