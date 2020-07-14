@@ -26,7 +26,7 @@ Last but not least, as both Azure Functions and Cognitive Services are **statele
 
 Using pay-as-you-go services might cause some unease as the monthly bill becomes unpredictable. The worry is unfounded!
 
-As long as you stick to standard language models and **stay below 1-2 thousand(!) translations per month** (at 1000 characters per ticket) **you don't pay a cent!** The Cognitive Services Translator offers a **[free tier](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/)** (2 million characters/month included). The Azure Functions consumption plan (pay as you go) also offers a **monthly free grant of 1 million requests and 400,000 GB-s resource consumption**. 
+As long as you stick to standard language models and **stay below 1-2 thousand(!) translations per month** (at 1000 characters per ticket) **you don't pay a cent!** The Cognitive Services Translator offers a **[free tier](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/)** (2 million characters/month included). The Azure Functions consumption plan (pay as you go) also offers a **monthly free grant of 1 million requests and 400,000 GB-s resource consumption**.
 
 In case you want customized translations or translate larger ticket volumes translation won't be free, but both Functions and Custom Translator are **quite inexpensive** (see: [Translator](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/) | [Functions](https://azure.microsoft.com/en-us/pricing/details/functions/)).
 
@@ -66,14 +66,14 @@ This guide explains how to create a PAT: https://docs.microsoft.com/en-us/azure/
 
 We now want to deploy the Azure Resources (Translator, Function App). Using Azure Resource Management (ARM) Templates makes this deployment very simple. Just click the "Deploy to Azure" Button and follow the guidance below:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fpython-deployment-button%2Fazuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fmaster%2Fazuredeploy.json)
 
-* Resource Group: Create a new resource group and give it an informative name. 
-* Region: Select a Region that's closest to you or your customers and complies with your requirements.
-* PAT: Enter your Azure DevOps **Personal Access Token**.
-* Translator Location: Stick with 'global' unless you have specific requirements (e.g. GDPR).
-* SKU : The pricing tier of the Cognitive Service Translator. Stick with F0 if 2M chars/months suffice and there is no other F0 resource in your subscription.
-* Azure Function Runtime: Preferably use dotnet (C#). Python deployment is a bit more complicates and takes an extra step (see Step 2b).
+- Resource Group: Create a new resource group and give it an informative name.
+- Region: Select a Region that's closest to you or your customers and complies with your requirements.
+- PAT: Enter your Azure DevOps **Personal Access Token**.
+- Translator Location: Stick with 'global' unless you have specific requirements (e.g. GDPR).
+- SKU : The pricing tier of the Cognitive Service Translator. Stick with F0 if 2M chars/months suffice and there is no other F0 resource in your subscription.
+- Azure Function Runtime: Preferably use dotnet (C#). Python deployment is a bit more complicates and takes an extra step (see Step 2b).
 
 #### Step 2b (optional): Deploy Python Azure Function
 
@@ -85,17 +85,19 @@ If you want to debug the function locally you'll need the function environment v
 
 #### Step 2c: Retrieve Function URI
 
-We now need to retrieve the Function URI. 
+We now need to retrieve the Function URI.
 
-Go to the [Azure Portal](https://portal.azure.com/), navigate to your **newly created resource group** and click on the **App Service resource**. ![select_appservice](C:\code\demo\devops-ticket-translation-function\docs\images\select_appservice.png)
+Go to the [Azure Portal](https://portal.azure.com/), navigate to your **newly created resource group** and click on the **App Service resource**.
+
+<img src="docs\images\select_appservice.png" alt="select_appservice" style="zoom:50%;" />
 
 In the left blade click on **Functions** and then click on the function name (**webhook** if you deployed a dotnet function, **parse-ticket** if you deployed a python function).
 
-![select_function](C:\code\demo\devops-ticket-translation-function\docs\images\select_function.png)
+<img src="docs\images\select_function.png" alt="select_function" style="zoom:50%;" />
 
 In the Function Overview select **Get Function Url** and copy the function URL.
 
-![get_function_url](C:\code\demo\devops-ticket-translation-function\docs\images\get_function_url.png)
+<img src="docs\images\get_function_url.png" alt="get_function_url" style="zoom:50%;" />
 
 ### Step 3: Azure DevOps WebHook
 
