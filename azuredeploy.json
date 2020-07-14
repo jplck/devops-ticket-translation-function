@@ -2,41 +2,27 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "siteName": {
-            "type": "string",
-            "defaultValue": "[concat('translate-', uniqueString(resourceGroup().id))]",
-            "metadata": {
-                "description": "The name of your Web Site."
-            }
-        },
-        "storageAccountName": {
-            "type": "String",
-            "defaultValue": "[concat('store', uniqueString(resourceGroup().id))]"
-        },
-        "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Location for all resources."
-            }
-        },
         "PAT": {
             "type": "securestring",
             "metadata": {
                 "description": "Azure DevOps Personal Access Token"
             }
         },
-        "translatorAccountName": {
-            "defaultValue": "TextTranslation",
-            "metadata": {
-                "description": "Display name of Text Translation API account"
-            },
-            "type": "string"
+        "targetLanguage": {
+            "type": "string",
+            "defaultValue": "en",
+            "allowedValues": [ "en", "cn", "fr", "es", "de", "it", "ru", "af", "ar", "bn", "bs", "bg", "yue", "ca", "zh-Hans", "zh-Hant", "hr", "cs", "da", "nl", "et", "fj", "fil", "fi", "el", "gu", "ht", "he", "hi", "mww", "hu", "is", "id", "ga", "ja", "kn", "kk", "sw", "tlh-Latn", "tlh-Piqd", "ko", "lv", "lt", "mg", "ms", "ml", "mt", "mi", "mr", "nb", "fa", "pl", "pt-br", "pt-pt", "ba", "otq", "ro", "sm", "sr-Cyrl", "sr-Latn", "sk", "sl", "sv", "ty", "ta", "te", "th", "to", "tr", "uk", "ur", "vi", "cy", "yua" ]
+        },
+        "translatorLocation": {
+            "type": "string",
+            "defaultValue": "global",
+            "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
+            "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
         },
         "SKU": {
             "type": "string",
             "metadata": {
-                "description": "SKU for Text Translation API"
+                "description": "SKU for Text Translation API.\nF0 is the free tier, but only allowed once per subscription. Upon deployment conflicts you'll like want to switch to S1."
             },
             "defaultValue": "F0",
             "allowedValues": [
@@ -47,130 +33,83 @@
                 "S4"
             ]
         },
-        "repoUrl": {
-            "type": "string",
-            "defaultValue": "https://github.com/jhchein/devops-translate-python.git"
-        },
-        "branch": {
-            "defaultValue": "master",
+        "azureFunctionRuntime": {
+            "allowedValues": [ "dotnet", "python" ],
+            "defaultValue": "dotnet",
+            "metadata": { "description": "The Azure Function runtime you want to use." },
             "type": "string"
         }
     },
     "variables": {
-        "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
-        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+        "storageAccountName": "[ concat('store', uniqueString(resourceGroup().id)) ]",
+        "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "translatorAccountName": "[concat('translator-', uniqueString(resourceGroup().id))]",
+        "location": "[resourceGroup().location]",
+        "appFunctionName": "[concat('translate-', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
-            "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-02-01",
-            "name": "[parameters('siteName')]",
-            "kind": "functionapp,linux",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName'))]"
-            ],
+            "name": "pythonFunctionDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[equals(parameters('azureFunctionRuntime'), 'python')]",
+            "apiVersion": "2019-10-01",
+
             "properties": {
-                "name": "[parameters('siteName')]",
-                "siteConfig": {
-                    "pythonVersion": "3.8",
-                    "cors": {
-                        "allowedOrigins": [
-                            "*"
-                        ]
-                    },
-                    "appSettings": [
-                        {
-                            "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "python"
-                        },
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
-                        },
-                        {
-                            "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
-                        },
-                        {
-                            "name": "AzureWebJobsDashboard",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listkeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';')]"
-                        },
-                        {
-                            "name": "TRANSLATION_ENDPOINT",
-                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',parameters('translatorAccountName'))).endpoint]"
-                        },
-                        {
-                            "name": "ENDPOINT_SECRET",
-                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('translatorAccountName')), '2017-04-18').key1]"
-                        },
-                        {
-                            "name": "ENDPOINT_REGION",
-                            "value": "[parameters('location')]"
-                        },
-                        {
-                            "name": "PERSONAL_ACCESS_TOKEN",
-                            "value": "[parameters('PAT')]"
-                        },
-                        {
-                            "name": "DESCRIPTION_FIELD",
-                            "value": "System.Description"
-                        },
-                        {
-                            "name": "TRANSLATION_FIELD",
-                            "value": "Custom.Translateddescription"
-                        },
-                        {
-                            "name": "TARGET_LANGUAGE",
-                            "value": "en"
-                        },
-                        {
-                            "name": "API_VERSION",
-                            "value": "3.0"
-                        }
-                    ]
+                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/python/azuredeploy.json" },
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
                 },
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "clientAffinityEnabled": false
-            },
-            "resources": [
-                {
-                    "apiVersion": "2018-11-01",
-                    "name": "web",
-                    "type": "sourcecontrols",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
-                    ],
-                    "properties": {
-                        "RepoUrl": "[parameters('repoUrl')]",
-                        "branch": "[parameters('branch')]",
-                        "IsManualIntegration": true
-                    },
-                    "location": "[parameters('location')]"
+                "parameters": {
+                    "PAT": { "value": "[parameters('PAT')]" },
+                    "targetLanguage": { "value": "[parameters('targetLanguage')]" },
+                    "translatorLocation": { "value": "[parameters('translatorLocation')]" },
+                    "appFunctionName": { "value": "[variables('appFunctionName')]" },
+                    "location": { "value": "[variables('location')]" },
+                    "translationEndpoint": { "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]" },
+                    "translatorSecret": { "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]" },
+                    "storageEndpoint": { "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]" }
                 }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
             ]
         },
         {
-            "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2018-02-01",
-            "name": "[variables('hostingPlanName')]",
-            "location": "[parameters('location')]",
-            "kind": "linux",
+            "name": "dotnetFunctionDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[equals(parameters('azureFunctionRuntime'), 'dotnet')]",
+            "apiVersion": "2019-10-01",
             "properties": {
-                "reserved": true
+                "templateLink": { "uri": "https://raw.githubusercontent.com/jplck/devops-ticket-translation-function/python-deployment-button/csharp/azuredeploy.json" },
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    "PAT": { "value": "[parameters('PAT')]" },
+                    "targetLanguage": { "value": "[parameters('targetLanguage')]" },
+                    "translatorLocation": { "value": "[parameters('translatorLocation')]" },
+                    "appFunctionName": { "value": "[variables('appFunctionName')]" },
+                    "location": { "value": "[variables('location')]" },
+                    "translationEndpoint": { "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts',variables('translatorAccountName'))).endpoint]" },
+                    "translatorSecret": { "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName')), '2017-04-18').key1]" },
+                    "storageEndpoint": { "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2019-06-01').keys[0].value,';EndpointSuffix=core.windows.net')]" },
+                    "repoUrl": { "value": "https://github.com/jplck/devops-ticket-translation-function" },
+                    "branch": { "value": "master" }
+                }
             },
-            "sku": {
-                "Tier": "Dynamic",
-                "Name": "Y1"
-            }
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('translatorAccountName'))]"
+            ]
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('storageAccountName')]",
+            "name": "[variables('storageAccountName')]",
             "apiVersion": "2018-02-01",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "kind": "StorageV2",
             "sku": {
                 "name": "Standard_LRS"
@@ -179,8 +118,8 @@
         {
             "type": "Microsoft.CognitiveServices/accounts",
             "apiVersion": "2017-04-18",
-            "name": "[parameters('translatorAccountName')]",
-            "location": "[parameters('location')]",
+            "name": "[variables('translatorAccountName')]",
+            "location": "[parameters('translatorLocation')]",
             "kind": "TextTranslation",
             "sku": {
                 "name": "[parameters('SKU')]"

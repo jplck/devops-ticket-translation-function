@@ -1,0 +1,150 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "PAT": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Azure DevOps Personal Access Token"
+            }
+        },
+        "targetLanguage": {
+            "type": "string",
+            "defaultValue": "en",
+            "allowedValues": [ "en", "cn", "fr", "es", "de", "it", "ru", "af", "ar", "bn", "bs", "bg", "yue", "ca", "zh-Hans", "zh-Hant", "hr", "cs", "da", "nl", "et", "fj", "fil", "fi", "el", "gu", "ht", "he", "hi", "mww", "hu", "is", "id", "ga", "ja", "kn", "kk", "sw", "tlh-Latn", "tlh-Piqd", "ko", "lv", "lt", "mg", "ms", "ml", "mt", "mi", "mr", "nb", "fa", "pl", "pt-br", "pt-pt", "ba", "otq", "ro", "sm", "sr-Cyrl", "sr-Latn", "sk", "sl", "sv", "ty", "ta", "te", "th", "to", "tr", "uk", "ur", "vi", "cy", "yua" ]
+        },
+        "translatorLocation": {
+            "type": "string",
+            "defaultValue": "global",
+            "allowedValues": [ "australiaeast", "canadacentral", "centralindia", "eastasia", "global", "westeurope", "westus2" ],
+            "metadata": { "description": "Deployment location of your translator. Choose the Global region unless your business or application requires a specific region." }
+        },
+        "appFunctionName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "translationEndpoint": { "type": "string" },
+        "translatorSecret": { "type": "securestring" },
+        "storageEndpoint": { "type": "string" },
+        "repoUrl": {
+            "type": "string"
+        },
+        "branch": {
+            "type": "string"
+        }
+    },
+    "functions": [],
+    "variables": { "appInsightsName": "[ concat('appinsights', uniqueString(resourceGroup().id)) ]" },
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "name": "[parameters('appFunctionName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+            ],
+            "apiVersion": "2018-11-01",
+            "properties": {
+                "siteConfig": {
+                    "cors": {
+                        "allowedOrigins": [
+                            "*"
+                        ]
+                    },
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[parameters('storageEndpoint')]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(parameters('appFunctionName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[parameters('storageEndpoint')]"
+                        },
+                        {
+                            "name": "TRANSLATION_ENDPOINT",
+                            "value": "[parameters('translationEndpoint')]"
+                        },
+                        {
+                            "name": "ENDPOINT_SECRET",
+                            "value": "[parameters('translatorSecret')]"
+                        },
+                        {
+                            "name": "ENDPOINT_REGION",
+                            "value": "[parameters('translatorLocation')]"
+                        },
+                        {
+                            "name": "PERSONAL_ACCESS_TOKEN",
+                            "value": "[parameters('PAT')]"
+                        },
+                        {
+                            "name": "DESCRIPTION_FIELD",
+                            "value": "System.Description"
+                        },
+                        {
+                            "name": "TRANSLATION_FIELD",
+                            "value": "Custom.Translateddescription"
+                        },
+                        {
+                            "name": "TARGET_LANGUAGE",
+                            "value": "[parameters('targetLanguage')]"
+                        },
+                        {
+                            "name": "API_VERSION",
+                            "value": "3.0"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2018-11-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('appFunctionName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[parameters('repoURL')]",
+                        "branch": "[parameters('branch')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-05-01",
+            "name": "[variables('appInsightsName')]",
+            "type": "Microsoft.Insights/components",
+            "kind": "web",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('appFunctionName'))]": "Resource"
+            },
+            "properties": {
+                "Application_Type": "web",
+                "ApplicationId": "[variables('appInsightsName')]"
+            }
+        }
+    ],
+    "outputs": {}
+}

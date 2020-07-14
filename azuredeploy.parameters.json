@@ -5,11 +5,12 @@
     "PAT": {
       "value": "ADDYOURPATHERE"
     },
-    "repoURL": {
-      "value": "https://github.com/sebastus/AzureFunctionDeployment/blob/master/azureDeploy.json"
+    "translatorLocation": {
+      "value": "global"
     },
-    "branch": {
-      "value": "master"
-    }
+    "SKU": { "value": "S1" },
+    "azureFunctionRuntime": { "value": "dotnet" },
+    "targetLanguage": { "value": "en" },
+    "appNamePrefix": { "value": "translate-" }
   }
 }

@@ -42,11 +42,16 @@ translator_endpoint += f"translate?api-version={api_version}&to={target_language
 
 
 def translate(text) -> str:
+    logging.info(f"Translating: '{text}'.")
     payload = json.dumps([{"text": text}])
     response = requests.request(
         "POST", translator_endpoint, headers=headers, data=payload
     )
-    response_text = json.loads(response.text)[0]["translations"][0]["text"]
+    logging.debug(f"Response: '{response.text}'")
+    try:
+        response_text = json.loads(response.text)[0]["translations"][0]["text"]
+    except KeyError as e:
+        return e
     return response_text
 
 
@@ -63,6 +68,7 @@ def update_devops_workitem(text, project_id, work_item_id, organization_url):
 
 
 def parse_devops_ticket(req_body) -> (str, str, str, str):
+    logging.info("parsing DevOps Ticket...")
     return {
         "baseUrl": req_body["resourceContainers"]["project"]["baseUrl"],
         "project_id": req_body["resourceContainers"]["project"]["id"],
@@ -74,12 +80,13 @@ def parse_devops_ticket(req_body) -> (str, str, str, str):
 def get_ticket_description(req_body) -> str:
     logging.info(f"Request: {req_body}")
 
-    if changed_description := (
+    changed_description = (
         req_body.get("resource", {})
         .get("fields", {})
         .get(source_field, {})
         .get("newValue", None)
-    ):
+    )
+    if changed_description:
         logging.info("'Description' changed -> Translating ticket")
         return changed_description
 
@@ -94,12 +101,13 @@ def get_ticket_description(req_body) -> str:
         logging.info("'Translated Description' already exists -> aborting translation")
         return None
 
-    if description := (
+    description = (
         req_body.get("resource", {})
         .get("revision", {})
         .get("fields", {})
         .get(source_field, None)
-    ):
+    )
+    if description:
         logging.info("'Translated Description' missing -> Translating 'Description''")
         return description
 
@@ -114,9 +122,15 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     project_info = parse_devops_ticket(req_body)
 
     if project_info["ticket_description"] is None:
+        logging.info("Translation is not necessary.")
         return func.HttpResponse("Translation is not necessary.")
 
     translation = translate(project_info["ticket_description"])
+
+    if isinstance(translation, KeyError):
+        return func.HttpResponse(f"Key Error: {translation}")
+
+    logging.info("Updating ticket")
     update_devops_workitem(
         text=translation,
         organization_url=project_info["baseUrl"],
