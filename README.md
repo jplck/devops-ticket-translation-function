@@ -64,7 +64,7 @@ This guide explains how to create a PAT: https://docs.microsoft.com/en-us/azure/
 
 ### Step 2: Azure
 
-We now want to deploy the Azure Resources (Translator, Function App). Using Azure Resource Management (ARM) Templates makes this deployment very simple. Just click the "Deploy to Azure" Button and follow the guidance below:
+We now want to deploy the Azure Resources (Translator, Function App). Azure Resource Management (ARM) Templates make this deployment very simple - just click the "Deploy to Azure" Button and follow the guidance below:
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjplck%2Fdevops-ticket-translation-function%2Fmaster%2Fazuredeploy.json)
 
@@ -72,14 +72,14 @@ We now want to deploy the Azure Resources (Translator, Function App). Using Azur
 - Region: Select a Region that's closest to you or your customers and complies with your requirements.
 - PAT: Enter your Azure DevOps **Personal Access Token**.
 - Translator Location: Stick with 'global' unless you have specific requirements (e.g. GDPR).
-- SKU : The pricing tier of the Cognitive Service Translator. Stick with F0 if 2M chars/months suffice and there is no other F0 resource in your subscription.
-- Azure Function Runtime: Preferably use dotnet (C#). Python deployment is a bit more complicates and takes an extra step (see Step 2b).
+- SKU : The pricing tier of the Cognitive Service Translator. Stick with F0 if 2M chars/months suffice and there is no other F0 resource in your subscription. [Translator Pricing](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/translator/)
+- Azure Function Runtime: Preferably use dotnet (C#). Python deployment is a bit more complicated and takes an extra step (see Step 2b).
 
 #### Step 2b (optional): Deploy Python Azure Function
 
 If you chose dotnet runtime, skip to step 2c.
 
-The Python function cannot be deployed from GitHub. In order to deploy a Python function via Zip deployment, you'll want to clone this repository and publish the **parse-ticket** function from the python directory as in these guide for [Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-your-first-function-visual-studio), [Visual Studio Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code), and [the command-line interface](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli)
+The Python function cannot be deployed from GitHub. In order to deploy a Python function (via Zip deployment), you'll want to clone this repository and publish the **parse-ticket** function from the python directory as in these guide for [Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-your-first-function-visual-studio), [Visual Studio Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-function-vs-code), and [the command-line interface](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-azure-function-azure-cli)
 
 If you want to debug the function locally you'll need the function environment variables. Make sure to add environment variables by replacing your local.settings.json with the [example file](python/example_local.settings.json) we provided and updating the fields.
 
